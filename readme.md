@@ -1,7 +1,7 @@
 # Ornament Generation
 This silly little thing makes images like this:  
 
-![preview](example outputs/2018.12.10-16.32.48.png)
+![preview](https://raw.githubusercontent.com/TheMapSmith/orn-gen/master/example%20outputs/2018.12.10-16.32.48.png)
 
 # Credits
 @mattdesl for `canvas-sketch` and `canvas-sketch-util`
