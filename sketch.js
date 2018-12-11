@@ -8,29 +8,32 @@ const settings = {
 const sketch = () => {
   return ({ context, width, height }) => {
     var hue = Math.floor(Math.random() * 254);
-    context.fillStyle = `hsl(${hue}, 25%, 95%)`;
+    var bg = `hsl(${hue}, 25%, 95%)`;
+    context.fillStyle = bg;
     var black = "#555555"
     context.strokeStyle = black;
     context.fillRect(0, 0, width, height);
 
-    var pageMargin = 200;
-    var printWidth = width - (pageMargin * 2)
-    var cols = 6;
-    var radius = 85;
-    var margin = (printWidth - (radius * cols * 2))/(cols - 1);
+    // parameters
+    var pageMargin = 200; // distance in pixels from edge of canvas to edge of first ornament
+    var printWidth = width - (pageMargin * 2) // calculate the inner square where ornaments are drawn
+    var cols = 6; // number of columns of ornaments in the print area
+    var radius = 85; // radius of the ornaments
+    var margin = (printWidth - (radius * cols * 2))/(cols - 1); // margin between the circles
     var diameter = radius * 2;
+    var shards = 5 // number of random colors
 
+    // this loop uses the parameters above to lay out a grid of circles
     for (var i = radius + pageMargin; i < width - radius; i+= diameter + margin) {
       for (var j = radius + pageMargin; j < width - radius; j+= diameter + margin) {
         // draw the hooks
+        //vertical line
+        context.moveTo(i,j); // start drawing from the center of the bulb
+        var endpoint = j - radius - (margin / 4); // set an offset endpoint
+        context.lineTo(i, endpoint); // draw a line from the center to that endpoint
+        context.stroke(); // apply a stroke to it
 
-        //vertical parts
-        context.moveTo(i,j);
-        var endpoint = j - radius - (margin / 4);
-        context.lineTo(i, endpoint);
-        context.stroke();
-
-        // hook half arc
+        // draw a hook half arc at the top of that line
         var hookScale = 4
         var hookCenterX = i - (radius / hookScale);
         var hookCenterY = endpoint;
@@ -41,73 +44,78 @@ const sketch = () => {
         context.lineWidth = 10;
         context.stroke();
 
-        // draw little bump on top
-        var bumpScale = 5
-        draw(i,j - radius,radius/bumpScale,0,360,false,"black")
-        draw(i,j - radius,radius/bumpScale,0,360,false,"stroke", 5)
+        // draw little bump on top of the ornament
+        var bumpScale = 4
+        draw(i, j - radius, radius/bumpScale, 0, 360, false, "fill", "black")
+        // draw(i, j - radius, radius/bumpScale, 0, 360, false, "stroke", null, 5)
 
-        // draw the bulbs
+        // draw the main bulbs
         // draw fill that matches bg
-        draw(i,j,radius,0,360,false,"bg")
-        // random interior color
-        var shards = 10
+        draw(i,j,radius,0,360,false,"fill", "bg")
+
+        // make random interior colors
         for (var k = 1; k <= shards; k++) {
           var start2 = Math.floor(Math.random() * 360) * (Math.PI / 180);
           var end2 = Math.floor(Math.random() * 360) * (Math.PI / 180);
-          draw(i,j,radius,start2,end2,false,"fill")
+          draw(i, j, radius, start2, end2, false, "fill", "color")
         }
-        // draw outlines
-        draw(i,j,radius,0,360,false,"stroke", 10)
+        // trace the ornament after all the filling and drawing is done
+        draw(i, j, radius, 0, 360, false, "stroke", null, 10)
       }
     }
 
-    function draw(x, y, radius, startAngle, endAngle, anticlockwise, drawType, strokeWidth) {
+    function draw(x, y, radius, startAngle, endAngle, anticlockwise, drawType, fillType, strokeWidth) {
       context.beginPath();
       context.arc(x, y, radius, startAngle, endAngle, anticlockwise)
-
-      // decide if the stroke will be small or big
+      // decide what kind of thing to draw
       if (drawType === "stroke") {
-        if (strokeWidth === 5) { context.lineWidth = 10; }
-        else { context.lineWidth = 10; }
-        // do the stroke
-        context.stroke();
-
+        strokePath(strokeWidth)
       } else if (drawType === "fill") {
-        // in HSL, red is between 0 - 20 and 340 - 360
-        // green between 80 and 140
+        fillPath(fillType)
+      }
+    } // end draw()
 
-        var whichRed = random.boolean()
-        if (whichRed === true) {
-          var red = random.range(0, 20);
-        } else {
-          var red = random.range(350, 360);
-        }
+    function strokePath (strokeWidth) {
+      context.lineWidth = strokeWidth;
+      context.stroke(); // do the stroke
+    } // end strokePath()
 
-        var green = random.range(80, 140);
-
+    function fillPath (fillType) {
+      if (fillType === "color") {
         // var low = random.range(50, 65) // darker
         var low = random.range(65, 85) // pastel-er
 
         var redOrGreen = random.boolean();
 
-        if (redOrGreen === true) {
+        if (redOrGreen === true) { // true is red
+          // in HSL, red is between 0 - 20 and 340 - 360
+          // so red needs two cases to decide which side of 360º is needed
+          var whichRed = random.boolean()
+          if (whichRed === true) {
+            var red = random.range(0, 20);
+          } else {
+            var red = random.range(350, 360);
+          }
           var shade = `hsl(${red}, ${low}%, ${low}%)`;
           context.fillStyle = shade;
-        } else {
+        } else { // green is false
+          // green just between 80 and 140
+          var green = random.range(80, 140);
           var shade = `hsl(${green}, ${low}%, ${low}%)`;
           context.fillStyle = shade;
-        }
-        context.fill();
-      } else if (drawType === "black") {
-        context.fillStyle = black;
-        context.fill();
-      } else {
-        // fill with background color
-        context.fill();
-      }
+        } // end red vs green
 
+      } else if (fillType === "bg") {
+        context.fillStyle = bg;
+        context.shadowBlur = 20;
+        context.shadowOffsetX = 105;
+        context.shadowOffsetY = 105;
+      } else if (fillType === "black") {
+        context.fillStyle = black;
+      }
+    context.fill(); // once you make all the choice above, then fill
     }
-  };
+  }; // end canvas-sketch return
 };
 
 canvasSketch(sketch, settings);
