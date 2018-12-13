@@ -22,6 +22,7 @@ const sketch = () => {
     var margin = (printWidth - (radius * cols * 2))/(cols - 1); // margin between the circles
     var diameter = radius * 2;
     var shards = 5 // number of random colors
+    var shadow = 15; // shadowBlur setting
 
     // this loop uses the parameters above to lay out a grid of circles
     for (var i = radius + pageMargin; i < width - radius; i+= diameter + margin) {
@@ -46,25 +47,37 @@ const sketch = () => {
 
         // draw little bump on top of the ornament
         var bumpScale = 4
-        draw(i, j - radius, radius/bumpScale, 0, 360, false, "fill", "black")
+        draw(i, j - radius, radius/bumpScale, 0, 360, false, "fill", "black", 0, 0)
         // draw(i, j - radius, radius/bumpScale, 0, 360, false, "stroke", null, 5)
 
         // draw the main bulbs
         // draw fill that matches bg
-        draw(i,j,radius,0,360,false,"fill", "bg")
+        draw(i,j,radius,0,360,false,"fill", "bg", 10, shadow)
 
         // make random interior colors
         for (var k = 1; k <= shards; k++) {
           var start2 = Math.floor(Math.random() * 360) * (Math.PI / 180);
           var end2 = Math.floor(Math.random() * 360) * (Math.PI / 180);
-          draw(i, j, radius, start2, end2, false, "fill", "color")
+          draw(i, j, radius, start2, end2, false, "fill", "color", 0, 0)
         }
         // trace the ornament after all the filling and drawing is done
-        draw(i, j, radius, 0, 360, false, "stroke", null, 10)
+        draw(i, j, radius, 0, 360, false, "stroke", null, 10, 0)
       }
     }
 
-    function draw(x, y, radius, startAngle, endAngle, anticlockwise, drawType, fillType, strokeWidth) {
+    function draw(x, y, radius, startAngle, endAngle, anticlockwise, drawType, fillType, strokeWidth, shadowSetting) {
+      if (shadowSetting === 0) { // clear the shadow parameters for all draws except bg
+        context.shadowBlur = 0;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0
+        context.shadowColor = null;
+      } else {
+        context.shadowBlur = shadowSetting * 3;
+        context.shadowOffsetX = shadowSetting;
+        context.shadowOffsetY = shadowSetting;
+        context.shadowColor = "#999999";
+      }
+      context.shadowColor = null;
       context.beginPath();
       context.arc(x, y, radius, startAngle, endAngle, anticlockwise)
       // decide what kind of thing to draw
@@ -107,9 +120,6 @@ const sketch = () => {
 
       } else if (fillType === "bg") {
         context.fillStyle = bg;
-        context.shadowBlur = 20;
-        context.shadowOffsetX = 105;
-        context.shadowOffsetY = 105;
       } else if (fillType === "black") {
         context.fillStyle = black;
       }
