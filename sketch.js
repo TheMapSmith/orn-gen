@@ -1,5 +1,6 @@
 const canvasSketch = require('canvas-sketch');
 const random = require('canvas-sketch-util/random');
+const math = require('canvas-sketch-util/math');
 
 const settings = {
   dimensions: [ 2000, 2000 ]
@@ -7,27 +8,48 @@ const settings = {
 
 const sketch = () => {
   return ({ context, width, height }) => {
-    var hue = Math.floor(Math.random() * 254);
-    var bg = `hsl(${hue}, 25%, 95%)`;
-    context.fillStyle = bg;
-    var black = "#555555"
-    context.strokeStyle = black;
-    context.fillRect(0, 0, width, height);
-
-    // parameters
+    /*
+          parameters
+    */
+    // page layout
     var pageMargin = 200; // distance in pixels from edge of canvas to edge of first ornament
     var printWidth = width - (pageMargin * 2) // calculate the inner square where ornaments are drawn
     var cols = 6; // number of columns of ornaments in the print area
     var radius = 85; // radius of the ornaments
     var margin = (printWidth - (radius * cols * 2))/(cols - 1); // margin between the circles
     var diameter = radius * 2;
-    var shards = 5 // number of random colors
-    var shadow = 15; // shadowBlur setting
 
-    // this loop uses the parameters above to lay out a grid of circles
+    // ornament design
+    var shards = random.range(1,20) // number of random colors
+    var shadow = 15; // shadowBlur setting
+    var bumpScale = 4 // the ratio between the ornament radius and the hook holder radius
+    var hookScale = 4 // the ratio between the ornament radius and the hook radius
+
+    // helper variables for circle drawing
+    var zero = math.degToRad(0);
+    var three60 = math.degToRad(360);
+    var one80 = math.degToRad(180);
+
+    // set global drawing settings
+    var bghue = random.range(0,254);
+    var bg = `hsl(${bghue}, 25%, 95%)`;
+    var black = "#555555"
+    var shadowColor = "rgba(0,0,0,0.25)";
+    context.strokeStyle = black;
+    context.fillStyle = bg;
+    context.fillRect(0, 0, width, height); // draw the background rectangle
+
+    /*
+          this loop uses the parameters above to lay out a grid of circles
+    */
     for (var i = radius + pageMargin; i < width - radius; i+= diameter + margin) {
+      // i ends up being the x coordinate center of the circles
       for (var j = radius + pageMargin; j < width - radius; j+= diameter + margin) {
-        // draw the hooks
+        // j ends up being the y coordinate center of the circles
+        // the origin is top-left and it moves down then over
+        /*
+              draw the hooks
+        */
         //vertical line
         context.moveTo(i,j); // start drawing from the center of the bulb
         var endpoint = j - radius - (margin / 4); // set an offset endpoint
@@ -35,47 +57,43 @@ const sketch = () => {
         context.stroke(); // apply a stroke to it
 
         // draw a hook half arc at the top of that line
-        var hookScale = 4
-        var hookCenterX = i - (radius / hookScale);
+        var hookCenterX = i - (radius / hookScale); // the center has to be offset from the above endpoint
         var hookCenterY = endpoint;
         var hookRadius = radius / hookScale;
-        var hookStart = 0 * (Math.PI / 180);
-        var hookEnd = 180 * (Math.PI / 180);
-        context.arc(hookCenterX, hookCenterY, hookRadius, hookStart,hookEnd,true)
+        context.arc(hookCenterX, hookCenterY, hookRadius, zero, one80, true)
         context.lineWidth = 10;
         context.stroke();
 
         // draw little bump on top of the ornament
-        var bumpScale = 4
-        draw(i, j - radius, radius/bumpScale, 0, 360, false, "fill", "black", 0, 0)
-        // draw(i, j - radius, radius/bumpScale, 0, 360, false, "stroke", null, 5)
+        draw(i, j - radius, radius/bumpScale, zero, three60, false, "fill", "black", 0, 0)
 
-        // draw the main bulbs
+        /*
+              draw the main bulbs
+        */
         // draw fill that matches bg
-        draw(i,j,radius,0,360,false,"fill", "bg", 10, shadow)
+        draw(i, j, radius, zero, three60, false, "fill", "bg", 10, shadow)
 
         // make random interior colors
         for (var k = 1; k <= shards; k++) {
-          var start2 = Math.floor(Math.random() * 360) * (Math.PI / 180);
-          var end2 = Math.floor(Math.random() * 360) * (Math.PI / 180);
-          draw(i, j, radius, start2, end2, false, "fill", "color", 0, 0)
+          var shardStart = math.degToRad(random.range(0,360));
+          var shardEnd = math.degToRad(random.range(0,360));
+          draw(i, j, radius, shardStart, shardEnd, false, "fill", "color", 0, 0)
         }
         // trace the ornament after all the filling and drawing is done
-        draw(i, j, radius, 0, 360, false, "stroke", null, 10, 0)
+        draw(i, j, radius, zero, three60, false, "stroke", null, 10, 0)
       }
     }
 
     function draw(x, y, radius, startAngle, endAngle, anticlockwise, drawType, fillType, strokeWidth, shadowSetting) {
-      if (shadowSetting === 0) { // clear the shadow parameters for all draws except bg
+      if (shadowSetting === 0) { // clear the shadow parameters for all draws except bg fill
         context.shadowBlur = 0;
         context.shadowOffsetX = 0;
         context.shadowOffsetY = 0
-        context.shadowColor = null;
       } else {
         context.shadowBlur = shadowSetting * 3;
         context.shadowOffsetX = shadowSetting;
         context.shadowOffsetY = shadowSetting;
-        context.shadowColor = "#999999";
+        context.shadowColor = shadowColor;
       }
       context.shadowColor = null;
       context.beginPath();
