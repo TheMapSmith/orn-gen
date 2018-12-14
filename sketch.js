@@ -20,7 +20,8 @@ const sketch = () => {
     var diameter = radius * 2;
 
     // ornament design
-    var shards = random.range(1,20) // number of random colors
+    var shards = random.range(2, 7) // number of random colors
+    var shardColors = ['red', 'green', 'gold', 'silver'] // the possible random colors
     var shadow = 15; // shadowBlur setting
     var bumpScale = 4 // the ratio between the ornament radius and the hook holder radius
     var hookScale = 4 // the ratio between the ornament radius and the hook radius
@@ -31,8 +32,9 @@ const sketch = () => {
     var one80 = math.degToRad(180);
 
     // set global drawing settings
-    var bghue = random.range(0,254);
-    var bg = `hsl(${bghue}, 25%, 95%)`;
+    var bghue = random.range(0,254); // pick a random background color
+    var bg = `hsla(${bghue}, 25%, 95%, 1)`; // make it super light
+    var a = 0.5; // global hsla alpha level
     var black = "#555555"
     var shadowColor = "rgba(0,0,0,0.25)";
     context.strokeStyle = black;
@@ -74,67 +76,78 @@ const sketch = () => {
         draw(i, j, radius, zero, three60, false, "fill", "bg", 10, shadow)
 
         // make random interior colors
+        var shardColor = random.pick(shardColors)
         for (var k = 1; k <= shards; k++) {
           var shardStart = math.degToRad(random.range(0,360));
           var shardEnd = math.degToRad(random.range(0,360));
-          draw(i, j, radius, shardStart, shardEnd, false, "fill", "color", 0, 0)
+          draw(i, j, radius, shardStart, shardEnd, false, "fill", "color", 0, 0, shardColor)
         }
         // trace the ornament after all the filling and drawing is done
         draw(i, j, radius, zero, three60, false, "stroke", null, 10, 0)
       }
     }
 
-    function draw(x, y, radius, startAngle, endAngle, anticlockwise, drawType, fillType, strokeWidth, shadowSetting) {
-      if (shadowSetting === 0) { // clear the shadow parameters for all draws except bg fill
-        context.shadowBlur = 0;
-        context.shadowOffsetX = 0;
-        context.shadowOffsetY = 0
+    function draw(x, y, radius, startAngle, endAngle, anticlockwise, drawType, fillType, strokeWidth, shadowSetting, shardColor) {
+      // manage drop shadows
+      if (shadowSetting === 0) {
+        // clear the shadow parameters for all draws except bg fill
+        clearShadow()
       } else {
-        context.shadowBlur = shadowSetting * 3;
-        context.shadowOffsetX = shadowSetting;
-        context.shadowOffsetY = shadowSetting;
-        context.shadowColor = shadowColor;
+        setShadow(shadowSetting)
       }
-      context.shadowColor = null;
+
       context.beginPath();
       context.arc(x, y, radius, startAngle, endAngle, anticlockwise)
+
       // decide what kind of thing to draw
       if (drawType === "stroke") {
         strokePath(strokeWidth)
       } else if (drawType === "fill") {
-        fillPath(fillType)
+        fillPath(fillType, shardColor)
       }
     } // end draw()
+
+    function clearShadow () {
+      context.shadowBlur = 0;
+      context.shadowOffsetX = 0;
+      context.shadowOffsetY = 0
+    }
+
+    function setShadow(shadowSetting) {
+      context.shadowBlur = shadowSetting * 3;
+      context.shadowOffsetX = shadowSetting;
+      context.shadowOffsetY = shadowSetting;
+      context.shadowColor = shadowColor;
+    }
 
     function strokePath (strokeWidth) {
       context.lineWidth = strokeWidth;
       context.stroke(); // do the stroke
     } // end strokePath()
 
-    function fillPath (fillType) {
+    function fillPath (fillType, shardColor) {
       if (fillType === "color") {
-        // var low = random.range(50, 65) // darker
-        var low = random.range(65, 85) // pastel-er
+        // this low variable is used for the saturation and lightness values in hsla(x,y%, z%)
+        var low = random.range(65, 75) // higher is pastel-er
 
-        var redOrGreen = random.boolean();
-
-        if (redOrGreen === true) { // true is red
-          // in HSL, red is between 0 - 20 and 340 - 360
-          // so red needs two cases to decide which side of 360º is needed
-          var whichRed = random.boolean()
-          if (whichRed === true) {
-            var red = random.range(0, 20);
-          } else {
-            var red = random.range(350, 360);
-          }
-          var shade = `hsl(${red}, ${low}%, ${low}%)`;
-          context.fillStyle = shade;
-        } else { // green is false
-          // green just between 80 and 140
+        if (shardColor === 'red') {
+          // red in hsla is between 0 and 20
+          var red = random.range(0, 20);
+          var shade = `hsla(${red}, ${low}%, ${low}%, ${a})`;
+        } else if (shardColor === 'green') {
+          // green in hsla is between 80 and 140
           var green = random.range(80, 140);
-          var shade = `hsl(${green}, ${low}%, ${low}%)`;
-          context.fillStyle = shade;
-        } // end red vs green
+          var shade = `hsla(${green}, ${low}%, ${low}%, ${a})`;
+        } else if (shardColor === 'gold') {
+          // gold in hsla is between 45 and 55
+          var gold = random.range(45, 55);
+          var shade = `hsla(${gold}, ${low}%, ${low}%, ${a})`;
+        } else if (shardColor === 'silver') {
+          // silver in hsla is 65-80% saturation
+          var silver = random.range(65, 80);
+          var shade = `hsla(0, 0%, ${silver}%, ${a})`;
+        }
+        context.fillStyle = shade;
 
       } else if (fillType === "bg") {
         context.fillStyle = bg;
