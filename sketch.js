@@ -20,7 +20,7 @@ const sketch = () => {
     var diameter = radius * 2;
 
     // ornament design
-    var shards = random.range(2, 7) // number of random colors
+    var shards = random.range(5, 10) // number of random colors
     var shardColors = ['red', 'green', 'gold', 'silver'] // the possible random colors
     var shadow = 15; // shadowBlur setting
     var bumpScale = 4 // the ratio between the ornament radius and the hook holder radius
@@ -34,7 +34,7 @@ const sketch = () => {
     // set global drawing settings
     var bghue = random.range(0,254); // pick a random background color
     var bg = `hsla(${bghue}, 25%, 95%, 1)`; // make it super light
-    var a = 0.5; // global hsla alpha level
+    var a = 0.33; // global hsla alpha level
     var black = "#555555"
     var shadowColor = "rgba(0,0,0,0.25)";
     context.strokeStyle = black;
@@ -79,7 +79,8 @@ const sketch = () => {
         var shardColor = random.pick(shardColors)
         for (var k = 1; k <= shards; k++) {
           var shardStart = math.degToRad(random.range(0,360));
-          var shardEnd = math.degToRad(random.range(0,360));
+          // var shardEnd = math.degToRad(random.range(0,360));
+          var shardEnd = math.degToRad(180 - math.radToDeg(shardStart));
           draw(i, j, radius, shardStart, shardEnd, false, "fill", "color", 0, 0, shardColor)
         }
         // trace the ornament after all the filling and drawing is done
@@ -127,21 +128,22 @@ const sketch = () => {
 
     function fillPath (fillType, shardColor) {
       if (fillType === "color") {
-        // this low variable is used for the saturation and lightness values in hsla(x,y%, z%)
-        var low = random.range(65, 75) // higher is pastel-er
+        // saturation and lightness vars to use in each color
+        var sat = random.range(40, 95) // higher is pastel-er
+        var light = random.range(25, 50) // higher is pastel-er
 
         if (shardColor === 'red') {
           // red in hsla is between 0 and 20
           var red = random.range(0, 20);
-          var shade = `hsla(${red}, ${low}%, ${low}%, ${a})`;
+          var shade = `hsla(${red}, ${sat}%, ${light}%, ${a})`;
         } else if (shardColor === 'green') {
           // green in hsla is between 80 and 140
-          var green = random.range(80, 140);
-          var shade = `hsla(${green}, ${low}%, ${low}%, ${a})`;
+          var green = random.range(105, 130);
+          var shade = `hsla(${green}, ${sat}%, ${light}%, ${a})`;
         } else if (shardColor === 'gold') {
           // gold in hsla is between 45 and 55
           var gold = random.range(45, 55);
-          var shade = `hsla(${gold}, ${low}%, ${low}%, ${a})`;
+          var shade = `hsla(${gold}, ${sat}%, ${light}%, ${a})`;
         } else if (shardColor === 'silver') {
           // silver in hsla is 65-80% saturation
           var silver = random.range(65, 80);
