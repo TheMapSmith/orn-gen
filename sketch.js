@@ -12,12 +12,12 @@ const sketch = () => {
           parameters
     */
     // page layout
-    var pageMargin = 200; // distance in pixels from edge of canvas to edge of first ornament
+    var pageMargin = 190; // distance in pixels from edge of canvas to edge of first ornament
     var printWidth = width - (pageMargin * 2) // calculate the inner square where ornaments are drawn
     var cols = 6; // number of columns of ornaments in the print area
-    var radius = 85; // radius of the ornaments
-    var margin = (printWidth - (radius * cols * 2))/(cols - 1); // margin between the circles
+    var radius = 80; // radius of the ornaments
     var diameter = radius * 2;
+    var margin = (printWidth - (diameter * cols))/(cols - 1); // margin between the circles
 
     // ornament design
     var shards = random.range(5, 10) // number of random colors
@@ -25,6 +25,8 @@ const sketch = () => {
     var shadow = 15; // shadowBlur setting
     var bumpScale = 4 // the ratio between the ornament radius and the hook holder radius
     var hookScale = 4 // the ratio between the ornament radius and the hook radius
+    var boxOffset = printWidth * .02;
+    var shift = printWidth / 75; // to make the ornaments look centered in the box, shift them this much down
 
     // helper variables for circle drawing
     var zero = math.degToRad(0);
@@ -41,21 +43,28 @@ const sketch = () => {
     context.fillStyle = bg;
     context.fillRect(0, 0, width, height); // draw the background rectangle
 
+    setShadow('box', 50)
+    context.fillRect(pageMargin - (margin / 2), pageMargin - (margin / 2), printWidth + margin, printWidth + margin)
+
     /*
           this loop uses the parameters above to lay out a grid of circles
     */
     for (var i = radius + pageMargin; i < width - radius; i+= diameter + margin) {
       // i ends up being the x coordinate center of the circles
       for (var j = radius + pageMargin; j < width - radius; j+= diameter + margin) {
+        grid(i, j, printWidth, cols, diameter, margin)
+        j += shift; // to draw the ornaments lower in the box, move down
         // j ends up being the y coordinate center of the circles
         // the origin is top-left and it moves down then over
         /*
               draw the hooks
         */
         //vertical line
+        clearShadow();
         context.moveTo(i,j); // start drawing from the center of the bulb
         var endpoint = j - radius - (margin / 4); // set an offset endpoint
         context.lineTo(i, endpoint); // draw a line from the center to that endpoint
+        context.lineWidth = 15;
         context.stroke(); // apply a stroke to it
 
         // draw a hook half arc at the top of that line
@@ -85,6 +94,7 @@ const sketch = () => {
         }
         // trace the ornament after all the filling and drawing is done
         draw(i, j, radius, zero, three60, false, "stroke", null, 10, 0)
+        j -= shift; // rest the move at the end of the shift so next box draws correctly
       }
     }
 
@@ -94,7 +104,7 @@ const sketch = () => {
         // clear the shadow parameters for all draws except bg fill
         clearShadow()
       } else {
-        setShadow(shadowSetting)
+        setShadow(shadowSetting, 'orn')
       }
 
       context.beginPath();
@@ -114,11 +124,18 @@ const sketch = () => {
       context.shadowOffsetY = 0
     }
 
-    function setShadow(shadowSetting) {
-      context.shadowBlur = shadowSetting * 3;
-      context.shadowOffsetX = shadowSetting;
-      context.shadowOffsetY = shadowSetting;
-      context.shadowColor = shadowColor;
+    function setShadow(type, shadowSetting) {
+      if (type === 'orn') {
+        context.shadowBlur = shadowSetting * 3;
+        context.shadowOffsetX = shadowSetting;
+        context.shadowOffsetY = shadowSetting;
+        context.shadowColor = shadowColor;
+      } else if (type === 'box') {
+        context.shadowBlur = shadowSetting * 3;
+        context.shadowOffsetX = shadowSetting;
+        context.shadowOffsetY = shadowSetting;
+        context.shadowColor = shadowColor;
+      }
     }
 
     function strokePath (strokeWidth) {
@@ -157,6 +174,15 @@ const sketch = () => {
         context.fillStyle = black;
       }
     context.fill(); // once you make all the choice above, then fill
+    }
+
+    function grid(i,j, printWidth, cols, diameter, margin) {
+      var w = diameter + margin
+      var x = i - (w / 2);
+      var y = j - (w / 2);
+      context.lineWidth = 15;
+      setShadow('box', 10);
+      context.strokeRect(x, y, w, w)
     }
   }; // end canvas-sketch return
 };
