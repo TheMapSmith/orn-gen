@@ -43,17 +43,12 @@ const sketch = () => {
     context.fillStyle = bg;
     context.fillRect(0, 0, width, height); // draw the background rectangle
 
-    setShadow('box', 50)
-    context.fillRect(pageMargin - (margin / 2), pageMargin - (margin / 2), printWidth + margin, printWidth + margin)
-
     /*
           this loop uses the parameters above to lay out a grid of circles
     */
     for (var i = radius + pageMargin; i < width - radius; i+= diameter + margin) {
       // i ends up being the x coordinate center of the circles
       for (var j = radius + pageMargin; j < width - radius; j+= diameter + margin) {
-        grid(i, j, printWidth, cols, diameter, margin)
-        j += shift; // to draw the ornaments lower in the box, move down
         // j ends up being the y coordinate center of the circles
         // the origin is top-left and it moves down then over
         /*
@@ -72,7 +67,6 @@ const sketch = () => {
         var hookCenterY = endpoint;
         var hookRadius = radius / hookScale;
         context.arc(hookCenterX, hookCenterY, hookRadius, zero, one80, true)
-        context.lineWidth = 10;
         context.stroke();
 
         // draw little bump on top of the ornament
@@ -94,7 +88,6 @@ const sketch = () => {
         }
         // trace the ornament after all the filling and drawing is done
         draw(i, j, radius, zero, three60, false, "stroke", null, 10, 0)
-        j -= shift; // rest the move at the end of the shift so next box draws correctly
       }
     }
 
@@ -174,15 +167,6 @@ const sketch = () => {
         context.fillStyle = black;
       }
     context.fill(); // once you make all the choice above, then fill
-    }
-
-    function grid(i,j, printWidth, cols, diameter, margin) {
-      var w = diameter + margin
-      var x = i - (w / 2);
-      var y = j - (w / 2);
-      context.lineWidth = 15;
-      setShadow('box', 10);
-      context.strokeRect(x, y, w, w)
     }
   }; // end canvas-sketch return
 };
