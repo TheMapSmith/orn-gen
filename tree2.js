@@ -43,6 +43,14 @@ const sketch = () => {
         const steps = random.rangeFloor(5,8);
         const angle = random.range(50, 60);
 
+        // saturation and lightness vars to use in each color
+        var sat = random.range(40, 80) // higher is pastel-er
+        var light = random.range(40, 80) // higher is pastel-er
+        var green = random.range(105, 130);
+        var brown = random.range(25, 40);
+        var treeGreen = `hsl(${green}, ${sat}%, ${light}%)`;
+        var trunkBrown = `hsl(${brown}, 100%, 40%)`;
+
         // draw the tree
         for (var k = 1; k <= steps; k++) {
 
@@ -64,7 +72,7 @@ const sketch = () => {
           y2 = startY + (r * Math.sin(math.degToRad(angle)))
 
 
-          triangle(startX, startY, x1, y1, x2, y2);
+          triangle(startX, startY, x1, y1, x2, y2, treeGreen);
 
           if (k === steps) {
             var bottom = j + cellHeight;
@@ -72,24 +80,25 @@ const sketch = () => {
             var trunkWidth = (cellWidth - (cellpageMargin * 2)) / 6
             // trunkHeight = cellHeight - cellpageMargin - startX;
             var trunkStart = startX - (trunkWidth / 2);
-            trunk(trunkStart, y1, trunkWidth, trunkHeight)
+            trunk(trunkStart, y1, trunkWidth, trunkHeight, trunkBrown)
           }
         }
 
       }
     }
 
-    function triangle(startX, startY, x1, y1, x2, y2) {
-      context.fillStyle = 'green'
+    function triangle(startX, startY, x1, y1, x2, y2, treeGreen) {
+      context.fillStyle = treeGreen;
       // draw a triangle
+      context.beginPath();
       context.moveTo(startX, startY);
       context.lineTo(x1, y1)
       context.lineTo(x2, y2)
       context.closePath()
       context.fill()
     }
-    function trunk(x, y, trunkWidth, trunkHeight) {
-      context.fillStyle = 'brown'
+    function trunk(x, y, trunkWidth, trunkHeight,trunkBrown) {
+      context.fillStyle = trunkBrown
       context.fillRect(x, y, trunkWidth, trunkHeight)
     }
   };
