@@ -31,6 +31,7 @@ const sketch = () => {
 
     // variables used throughout the loops
     var startX, startY, x1, y1, x2, y2, r, shift
+    var peakX, peakY
 
     for (var i = pageMargin; i <= printWidth ; i+= cellWidth + cellBuffer) {
       // counter for columns (y)
@@ -59,6 +60,7 @@ const sketch = () => {
         var overlap = 0.5;
         var treeWidth = cellWidth - (cellInnerMargin * 2)
         startX = i + (cellWidth / 2); // this is only set once per tree
+        peakX = startX
 
         for (var k = 1; k <= steps; k++) {
           var segmentWidth = k / steps * treeWidth;
@@ -66,6 +68,7 @@ const sketch = () => {
 
           if (k === 1) {
             startY = j;
+            peakY = startY
           } else {
             startY += segmentHeight * overlap;
           }
@@ -84,12 +87,9 @@ const sketch = () => {
             var trunkWidth = (cellWidth - (cellInnerMargin * 2)) / 6
             var trunkStart = startX - (trunkWidth / 2);
             trunk(trunkStart, y1, trunkWidth, trunkHeight, trunkBrown)
-          }
-
-
-          // overlap
-
-        }
+            ornamentSort(peakX, peakY, x1, y1, x2, y2)
+          };
+        };
 
         /*
           this loop draws the tree
@@ -151,6 +151,51 @@ const sketch = () => {
       context.fillStyle = trunkBrown;
       context.fillRect(x, y, trunkWidth, trunkHeight);
     };
+
+    function ornamentSort(peakX, peakY, x1, y1, x2, y2) {
+      var ornCount = 200
+      var ornCoordsX = [];
+      var ornCoordsY = [];
+      var ornCoords = []
+      // make random x and y values
+      for (var i = 0; i < ornCount; i++) {
+        ornCoordsX.push(random.rangeFloor(x1,x2))
+        ornCoordsY.push(random.rangeFloor(peakY,y1))
+      }
+
+      for (var i = 0; i < ornCoordsX.length; i++) {
+        var valid = []
+        var xa = ornCoordsX[i]
+        var ya = ornCoordsY[i]
+        // evaluate left edge of triangle
+        var l = ((peakY - y1)/(peakX - x1))*(xa-x1)+y1
+        // evaluate right edge of triangle
+        var r = ((peakY - y2)/(peakX - x2))*(xa-x2)+y2
+        // if the coordinate is less than both
+        if (ya > l && ya > r) {
+          valid.push(ornCoordsX[i], ornCoordsY[i])
+          ornCoords.push(valid)
+        }
+      }
+      if (ornCoords.length != 0) {
+        for (var i = 0; i <= 20; i++) {
+          ornamentDraw(ornCoords[i])
+        }
+      }
+    };
+
+    function ornamentDraw(coords) {
+      var radius = 10;
+      var startAngle = math.degToRad(0);
+      var endAngle = math.degToRad(360)
+
+      var x = coords[0]
+      var y = coords[1]
+
+      context.beginPath();
+      context.arc(x, y, radius, startAngle, endAngle, true);
+      context.fill();
+    }
   };
 };
 
