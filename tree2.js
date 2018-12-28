@@ -44,7 +44,7 @@ const sketch = () => {
         // context.strokeRect(i, j, cellWidth, cellHeight)
 
         // random tree parameters
-        const steps = random.rangeFloor(10,20); // number of triangles on the tree
+        const steps = random.rangeFloor(10,15); // number of triangles on the tree
         const angle = random.range(60, 60); // the top angle of the triangle
 
         // set a unique color for each tree
@@ -178,16 +178,43 @@ const sketch = () => {
         }
       }
       if (ornCoords.length != 0) {
-        for (var i = 0; i <= 20; i++) {
+        for (var i = 0; i <= 15; i++) {
           ornamentDraw(ornCoords[i])
         }
       }
     };
 
     function ornamentDraw(coords) {
-      var radius = 10;
+      var radius = rows > cols ? rows * 4 : cols * 4
+      // var radius = rows * 3;
       var startAngle = math.degToRad(0);
       var endAngle = math.degToRad(360)
+      var ornColors = ['red', 'green', 'gold', 'silver'] // the possible random colors
+      var ornColor = random.pick(ornColors)
+
+
+      // saturation and lightness vars to use in each color
+      var sat = random.range(70, 95) // higher is pastel-er
+      var light = random.range(50, 70) // higher is pastel-er
+
+      if (ornColor === 'red') {
+        // red in hsla is between 0 and 20
+        var red = random.range(0, 20);
+        var shade = `hsl(${red}, ${sat}%, ${light}%)`;
+      } else if (ornColor === 'green') {
+        // green in hsla is between 80 and 140
+        var green = random.range(105, 130);
+        var shade = `hsl(${green}, ${sat}%, ${light}%)`;
+      } else if (ornColor === 'gold') {
+        // gold in hsla is between 45 and 55
+        var gold = random.range(45, 55);
+        var shade = `hsl(${gold}, ${sat}%, ${light}%)`;
+      } else if (ornColor === 'silver') {
+        // silver in hsla is 65-80% saturation
+        var silver = random.range(65, 80);
+        var shade = `hsl(0, 0%, ${silver}%)`;
+      }
+      context.fillStyle = shade;
 
       var x = coords[0]
       var y = coords[1]
